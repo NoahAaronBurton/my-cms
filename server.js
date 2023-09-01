@@ -14,21 +14,21 @@ const db = mysql.createConnection({
   host: '127.0.0.1', // !Change this to your database host
   user: 'root', // Change this to your database username
   password: '', // Change this to your database password
-  database: 'test_db' //! Change this to your database name
+  database: 'db' //! Change this to your database name
 },
-    console.log(`connected to test db`)
+    console.log(`connected to db`)
 );
 
 //! rename table and params
-db.query(`DELETE FROM test_table WHERE id = ?`, 2, (err, result) => {
-    if (err) {
-      console.log(err);
-    }
-    console.log(result);
-  });
-
-db.query('SELECT * FROM test_table', function (err, results) {
-    console.log(results);
+// db.query(`DELETE FROM department WHERE id = ?`, 2, (err, result) => {
+//     if (err) {
+//       console.log(err);
+//     }
+//     console.log(result);
+//   });
+// ! change department
+db.query('SELECT * FROM department', function (err, results) {
+    console.log('select * from department table:' + results);
   });  
 
 app.use((req, res) => {
