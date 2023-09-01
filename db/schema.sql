@@ -1,0 +1,9 @@
+DROP DATABASE IF EXISTS test_db;
+CREATE DATABASE test_db;
+
+USE test_db;
+
+CREATE TABLE test_table (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(30) NOT NULL
+)
