@@ -19,22 +19,59 @@ const db = mysql.createConnection({
     console.log(`connected to db`)
 );
 
-//! rename table and params
-// db.query(`DELETE FROM department WHERE id = ?`, 2, (err, result) => {
-//     if (err) {
-//       console.log(err);
-//     }
-//     console.log(result);
-//   });
-// ! change department
-db.query('SELECT * FROM department', function (err, results) {
-    console.log('select * from department table:' + results);
-  });  
 
-app.use((req, res) => {
-    res.status(404).end();
-  });
+function showDepartments() {
+  db.query(`SELECT * FROM department`, function(err, results) { // chat GPT helped me with this formatting
+    console.log('\n');
+    console.log('id  Dept. Name ');
+    console.log('--  ----------');
+    results.forEach((row) => {
+      console.log(` ${row.id}   ${row.name} `);
+     
+    })
+    console.log('\n');
+    mainMenu();
+  })
+}
+
+
   
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+const questions = [
+  {
+    name: 'mainMenu',
+    type: 'list', 
+    message: 'Select an action:',
+    choices: [ 
+      'View All Departments',
+      'View All Roles',
+      'View All Employees',
+      'Add Department',
+      'Add Role',
+      'Add Employee',
+      'Update Employee Role',
+    ]
+  },
+  
+]
+
+
+//* current 'back' function: call mainMenu() in the cond. statement
+function mainMenu(){
+inquirer
+  .prompt(questions)
+  .then(function (data) {
+    
+    if (data.mainMenu === 'View All Departments') {
+      showDepartments();
+     }
+  })
+}
+mainMenu();
+// ---LEAVE AT BOTTOM---
+app.use((req, res) => {
+  res.status(404).end();
+});
+
+app.listen(PORT, () => {
+  // console.log(`Server running on port ${PORT}`);
+});
