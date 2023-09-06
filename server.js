@@ -2,6 +2,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const express = require('express');
+var AsciiTable = require('ascii-table');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -21,11 +22,11 @@ const db = mysql.createConnection({
 
 
 function showDepartments() {
-  db.query(`SELECT * FROM department`, function(err, results) { // chat GPT helped me with this formatting
+  db.query(`SELECT * FROM department`, function(err, results) { 
     console.log('\n');
     console.log('id  Dept. Name ');
     console.log('--  ----------');
-    results.forEach((row) => {
+    results.forEach((row) => { //* row is semantic and arbitrary
       console.log(` ${row.id}   ${row.name} `);
      
     })
@@ -34,8 +35,32 @@ function showDepartments() {
   })
 }
 
+function showRoles() {
+  db.query(
+    `SELECT role.title, role.id, department.name, role.salary FROM role INNER JOIN department ON role.department_id = department.id;`,
+    function (err, results) {
+      if (err) {
+        console.error(err);
+        return;
+      }
 
-  
+      // class from node module for tables
+      let table = new AsciiTable('All Roles');
+      table.setHeading('Title', 'Id', 'Department', 'Salary');
+
+      // chat gpt assisted with this results block
+      results.forEach((row) => {
+        table.addRow(row.title, row.id, row.name, row.salary);
+      });
+
+      console.log(table.toString());
+
+      // go back
+      mainMenu();
+    }
+  );
+}
+
 const questions = [
   {
     name: 'mainMenu',
@@ -55,7 +80,7 @@ const questions = [
 ]
 
 
-//* current 'back' function: call mainMenu() in the cond. statement
+
 function mainMenu(){
 inquirer
   .prompt(questions)
@@ -63,6 +88,8 @@ inquirer
     
     if (data.mainMenu === 'View All Departments') {
       showDepartments();
+     } if (data.mainMenu === 'View All Roles') {
+      showRoles();
      }
   })
 }
