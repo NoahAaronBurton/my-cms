@@ -11,5 +11,9 @@ VALUES  (325,"Account Executive", 80000, 003),
         (200, "Legal Admin", 125000, 002),
         (130, "Accountant", 75000, 001);
 INSERT INTO employee (id, first_name, last_name,role_id,manager_id)
-VALUES  (4574, "Bill","Withers", 300, NULL),
-        (2578, "B.B.", "King", 325, 4574);
+VALUES  (4574, "Bill","McBill", 300, NULL),
+        (2578, "Bob", "Bobbington", 325, 4574),
+        (2165, "Eric", "Ericson", 200, NULL),
+        (2735, "Jim", "Jimmithy",250, 2165),
+        (2531, "Carl", "Carlmore", 100, NULL),
+        (6398, "Kevin", "Kevner", 130, 2531);
