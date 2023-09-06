@@ -61,6 +61,24 @@ function showRoles() {
   );
 }
 
+function showEmployees() {
+  db.query(`SELECT employee.id AS employee_id, department.name AS department_name, employee.first_name, employee.last_name, role.title, role.id, role.department_id, role.salary, employee.manager_id FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id;`,
+  function (err, results) {
+    console.log(results);
+    if (err) {
+      console.error(err);
+      return;
+    }
+    let table = new AsciiTable('All Employees');
+    table.setHeading('Employee Id', 'First Name', 'Last Name', 'Role', 'Department', 'Role Id', 'Manager Id');
+   // todo: department
+    results.forEach((row) => {
+      table.addRow(row.employee_id, row.first_name, row.last_name, row.title, row.department_name, row.id, row.manager_id);
+    });
+    console.log(table.toString());
+  })
+}
+
 const questions = [
   {
     name: 'mainMenu',
@@ -90,6 +108,8 @@ inquirer
       showDepartments();
      } if (data.mainMenu === 'View All Roles') {
       showRoles();
+     } if (data.mainMenu === 'View All Employees') {
+      showEmployees();
      }
   })
 }
