@@ -3,6 +3,8 @@ const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const express = require('express');
 var AsciiTable = require('ascii-table');
+const { v4: uuidv4 } = require('uuid');
+
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -70,11 +72,32 @@ function showEmployees() {
     }
     let table = new AsciiTable('All Employees');
     table.setHeading('Employee Id', 'First Name', 'Last Name', 'Role', 'Department', 'Role Id', 'Manager Id');
-   // todo: department
     results.forEach((row) => {
       table.addRow(row.employee_id, row.first_name, row.last_name, row.title, row.department_name, row.id, row.manager_id);
     });
     console.log(table.toString());
+    mainMenu();
+  })
+}
+
+function addDepartment(addDepartment) {
+  
+  //todo: figure out id
+
+  let randomID = uuidv4();
+  let id = randomID.substring(1,8) //TRIM ID  
+
+  // let prevId = db.query(`SELECT LAST_INSERT_ID();`)
+  // let id = prevId++;
+  db.query(`insert into department values ('${id}','${addDepartment}');`,
+  function(err, results) {
+    if (err) {
+      console.error(err);
+      return;
+    }
+
+    console.log(`\n New Department added!:${addDepartment} \n The new ID for this department is:\n${id} \n` )
+    mainMenu();
   })
 }
 
@@ -93,6 +116,20 @@ const questions = [
       'Update Employee Role',
     ]
   },
+  {
+    name: 'addDepartment',
+    type: 'input',
+    when: (answers) => answers.mainMenu === 'Add Department',
+    message: 'Give your new department a name:',
+    validate(input) {
+      if(input.length >= 30 || input.length === 0) {
+        console.log(input);
+        return 'Maximum length cannot exceed 30 characters and must be at least one character'
+      } else {
+        return true;
+      }
+    }
+  },
   
 ]
 
@@ -102,6 +139,7 @@ function mainMenu(){
 inquirer
   .prompt(questions)
   .then(function (data) {
+    console.log(data);
     
     if (data.mainMenu === 'View All Departments') {
       showDepartments();
@@ -109,6 +147,9 @@ inquirer
       showRoles();
      } if (data.mainMenu === 'View All Employees') {
       showEmployees();
+     } if (data.mainMenu === "Add Department") {
+
+      addDepartment(data.addDepartment);
      }
   })
 }

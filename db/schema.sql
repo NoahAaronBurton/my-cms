@@ -4,7 +4,7 @@ CREATE DATABASE db;
 USE db;
 
 CREATE TABLE department (
-    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    id VARCHAR(8) NOT NULL PRIMARY KEY,
     name VARCHAR(30) NOT NULL
     
 );
@@ -14,7 +14,7 @@ CREATE TABLE role (
     id INT PRIMARY KEY NOT NULL,
     title VARCHAR(30),
     salary DECIMAL,
-    department_id INT NOT NULL,
+    department_id VARCHAR(8) NOT NULL,
     FOREIGN KEY (department_id) REFERENCES department(id)
     
 );

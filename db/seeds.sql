@@ -1,7 +1,7 @@
 INSERT INTO department (id,name) -- primarily intended for development and testing purposes. It's a convenient way to reset or recreate a database in non-production environments like development, testing, or local development environments --
-VALUES (001,"Finance"),
-        (002, "Legal"),
-        (003, "Sales");
+VALUES (1,"Finance"),
+        (2, "Legal"),
+        (3, "Sales");
 
 INSERT INTO role (id,title, salary, department_id)
 VALUES  (325,"Account Executive", 80000, 003),
