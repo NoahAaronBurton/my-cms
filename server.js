@@ -25,14 +25,13 @@ const db = mysql.createConnection({
 
 function showDepartments() {
   db.query(`SELECT * FROM department`, function(err, results) { 
-    console.log('\n');
-    console.log('id  Dept. Name ');
-    console.log('--  ----------');
+    console.log(results)
+    let table = new AsciiTable('All Departments');
+    table.setHeading('Id', 'Department Name')
     results.forEach((row) => { //* row is semantic and arbitrary
-      console.log(` ${row.id}   ${row.name} `);
-     
+     table.addRow(row.id, row.name)
     })
-    console.log('\n');
+    console.log(table.toString());
     mainMenu();
   })
 }
@@ -96,7 +95,7 @@ function addDepartment(addDepartment) {
       return;
     }
 
-    console.log(`\n New Department added!:${addDepartment} \n The new ID for this department is:\n${id} \n` )
+    console.log(`\n New Department added!: ${addDepartment} \n The new ID for this department is:\n${id} \n` )
     mainMenu();
   })
 }
