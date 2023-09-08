@@ -14,10 +14,10 @@ app.use(express.json());
 
 
 const db = mysql.createConnection({
-  host: '127.0.0.1', // !Change this to your database host
-  user: 'root', // Change this to your database username
-  password: '', // Change this to your database password
-  database: 'db' //! Change this to your database name
+  host: '127.0.0.1', //! cant be localhost for some reason
+  user: 'root', 
+  password: 'McFlurrywoo22', 
+  database: 'db' 
 },
     console.log(`connected to db`)
 );
@@ -25,7 +25,6 @@ const db = mysql.createConnection({
 
 function showDepartments() {
   db.query(`SELECT * FROM department`, function(err, results) { 
-    console.log(results)
     let table = new AsciiTable('All Departments');
     table.setHeading('Id', 'Department Name')
     results.forEach((row) => { //* row is semantic and arbitrary
@@ -80,14 +79,9 @@ function showEmployees() {
 }
 
 function addDepartment(addDepartment) {
-  
-  //todo: figure out id
-
+ 
   let randomID = uuidv4();
   let id = randomID.substring(1,8) //TRIM ID  
-
-  // let prevId = db.query(`SELECT LAST_INSERT_ID();`)
-  // let id = prevId++;
   db.query(`insert into department values ('${id}','${addDepartment}');`,
   function(err, results) {
     if (err) {
@@ -99,6 +93,53 @@ function addDepartment(addDepartment) {
     mainMenu();
   })
 }
+
+function addEmployee(id,firstName,lastName,isManager, addManager,roleId) {
+  let randomID = uuidv4();
+  id = randomID.substring(1, 8);
+
+  let newEmployeeManager;
+  // id if not manager, null if they are a manager
+  if (isManager === true) {
+    newEmployeeManager = null;
+  } else {
+  newEmployeeManager  = JSON.stringify(addManager);
+  }
+
+  db.query(`INSERT INTO employee VALUES ('${id}','${firstName}','${lastName}','${roleId}', ${newEmployeeManager})`);
+  console.log(`\n New Employee added!: ${firstName} ${lastName} \n The new Employee ID for ${firstName} is:\n${id} \n` )
+  mainMenu();
+}
+
+let managerChoices = []; // Define managerChoices in a higher scope
+function getManagers() { 
+
+  db.query( // select all null manager id rows
+    'SELECT e.id, e.first_name, e.last_name FROM employee e WHERE e.manager_id IS NULL;',
+    (err, results) => {
+      if (err) {
+        console.error('Error retrieving managers:', err);
+        return;
+      } 
+      // const managerChoices = results.map((row) => ({
+      //   name: `${row.first_name} ${row.last_name}`,
+      //   value: row.id,
+      // }))
+      for (let i = 0; i < results.length; i++) {
+        const row= results[i];
+        const managerChoice = {
+          name: `${row.first_name} ${row.last_name}`,
+          value: row.id,
+        };
+        managerChoices.push(managerChoice);
+      }
+
+      // console.log(managerChoices);
+    }
+  );
+}
+
+getManagers();
 
 const questions = [
   {
@@ -129,7 +170,63 @@ const questions = [
       }
     }
   },
+  {
+    name:'addFirstName',
+    type: 'input',
+    when: (answers) => answers.mainMenu === 'Add Employee',
+    message: 'Enter the First Name of your new employee:',
+    validate(input) {
+      if(input.length >= 30 || input.length === 0) {
+        
+        return 'Maximum length cannot exceed 30 characters and must be at least one character'
+      } else {
+        return true;
+      }
+    } 
+  },
+  {
+    name: 'addLastName',
+    type: 'input',
+    when: (answers) => answers.mainMenu === 'Add Employee',
+    message: 'Enter the Last Name for new employee:',
+    validate(input) {
+      if(input.length >= 30 || input.length === 0) {
+        console.log(input);
+        return 'Maximum length cannot exceed 30 characters and must be at least one character'
+      } else {
+        return true;
+      }
+    } 
+  },
+  {
+    name: 'isManager',
+    type: 'confirm',
+    message: 'Is the new employee in a management role?',
+    when: (answers) => answers.mainMenu === 'Add Employee',
+  },
+  {
+    name: 'addManager',
+    type: 'list',
+    when: (answers) => answers.isManager === false,
+    message: 'Enter the supervising Manager of new employee:',
+    choices: managerChoices,
+  },
+  {
+    name: 'addRole', 
+    type: 'input',
+    when: (answers) => answers.mainMenu === 'Add Employee',
+    message: 'Enter the Role Id that corresponds to the new employees role:',
+    validate(input) {
+      if(input.length >= 8 || input.length === 0) {
+        console.log(input);
+        return 'Maximum length cannot exceed 8 characters and must be at least one character'
+      } else {
+        return true;
+      }
+    } 
+  }, 
   
+
 ]
 
 
@@ -147,8 +244,9 @@ inquirer
      } if (data.mainMenu === 'View All Employees') {
       showEmployees();
      } if (data.mainMenu === "Add Department") {
-
       addDepartment(data.addDepartment);
+     } if (data.mainMenu === 'Add Employee') {
+      addEmployee(data.id,data.addFirstName,data.addLastName,data.isManager,data.addManager,data.addRole);
      }
   })
 }
