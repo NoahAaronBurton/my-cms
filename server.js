@@ -90,6 +90,7 @@ function addDepartment(addDepartment) {
     }
 
     console.log(`\n New Department added!: ${addDepartment} \n The new ID for this department is:\n${id} \n` )
+    getDepartments();
     mainMenu();
   })
 }
@@ -111,20 +112,17 @@ function addEmployee(id,firstName,lastName,isManager, addManager,roleId) {
   mainMenu();
 }
 
-let managerChoices = []; // Define managerChoices in a higher scope
+let managerChoices = []; 
 function getManagers() { 
 
   db.query( // select all null manager id rows
-    'SELECT e.id, e.first_name, e.last_name FROM employee e WHERE e.manager_id IS NULL;',
+    'SELECT e.id, e.first_name, e.last_name FROM employee e WHERE e.manager_id IS NULL;', // chat gpt helped with this query
     (err, results) => {
       if (err) {
         console.error('Error retrieving managers:', err);
         return;
       } 
-      // const managerChoices = results.map((row) => ({
-      //   name: `${row.first_name} ${row.last_name}`,
-      //   value: row.id,
-      // }))
+
       for (let i = 0; i < results.length; i++) {
         const row= results[i];
         const managerChoice = {
@@ -133,13 +131,31 @@ function getManagers() {
         };
         managerChoices.push(managerChoice);
       }
-
-      // console.log(managerChoices);
-    }
-  );
+  })
 }
 
-getManagers();
+
+let departmentChoices = [];
+function getDepartments() {
+  db.query(`SELECT * FROM department`, function(err, results) { 
+    for (let i = 0; i < results.length; i++) {
+      const row= results[i];
+      const departmentChoice = {
+        name: `${row.name}`,
+        value: row.id,
+      };
+      departmentChoices.push(departmentChoice);
+    }
+  })
+}
+
+
+function addRole (id,roleName,salary,departmentName) {
+  db.query(`INSERT INTO role VALUES (${id},'${roleName}',${salary},'${departmentName}')`)
+  console.log(`\n New Role added!: ${roleName} \n The new Role ID for ${roleName} is:\n${id} \n` )
+
+  mainMenu();
+}
 
 const questions = [
   {
@@ -170,7 +186,7 @@ const questions = [
       }
     }
   },
-  {
+  { // new employee
     name:'addFirstName',
     type: 'input',
     when: (answers) => answers.mainMenu === 'Add Employee',
@@ -224,6 +240,54 @@ const questions = [
         return true;
       }
     } 
+  },
+  { // new role
+    name: 'roleId',
+    type: 'input',
+    when: (answers) => answers.mainMenu === 'Add Role',
+    message: 'Give your new Role an ID (a number between 0-999)',
+    validate(input) {
+      if(input.length >= 4 || input.length === 0) {
+        console.log(input);
+        return 'Maximum length cannot exceed 3 characters and must be at least one character'
+      } else {
+        return true;
+      }
+    }  
+  },
+  { 
+    name: 'roleName',
+    type: 'input',
+    when: (answers) => answers.mainMenu === 'Add Role',
+    message: 'Enter a name for the new Role:',
+    validate(input) {
+      if(input.length >= 30 || input.length === 0) {
+        console.log(input);
+        return 'Maximum length cannot exceed 8 characters and must be at least one character'
+      } else {
+        return true;
+      }
+    }  
+  },
+  {
+    name: 'addSalary',
+    type: 'input',
+    when: (answers) => answers.mainMenu === 'Add Role',
+    message: 'Enter the yearly Salary for this Role:',
+    validate(input) {
+      if (!/^\d+$/.test(input)) {
+        return 'Input must contain only numbers';
+      } else {
+        return true;
+      }
+    }
+  },
+  {
+    name: 'selectDepartment',
+    type: 'list',
+    when: (answers) => answers.mainMenu === 'Add Role',
+    message: 'Select the department this role belongs to:',
+    choices: departmentChoices
   }, 
   
 
@@ -247,11 +311,17 @@ inquirer
       addDepartment(data.addDepartment);
      } if (data.mainMenu === 'Add Employee') {
       addEmployee(data.id,data.addFirstName,data.addLastName,data.isManager,data.addManager,data.addRole);
+     } if (data.mainMenu === 'Add Role') {
+      addRole(data.roleId,data.roleName,data.addSalary,data.selectDepartment)
      }
   })
 }
-mainMenu();
+
 // ---LEAVE AT BOTTOM---
+getManagers();
+getDepartments();
+mainMenu();
+
 app.use((req, res) => {
   res.status(404).end();
 });
