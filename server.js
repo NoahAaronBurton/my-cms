@@ -1,4 +1,4 @@
-//! remove nodemon from dependencies before deploy
+
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const express = require('express');
@@ -14,9 +14,9 @@ app.use(express.json());
 
 
 const db = mysql.createConnection({
-  host: '127.0.0.1', //! cant be localhost for some reason
+  host: '127.0.0.1', //! cant be localhost for some reason on my machine
   user: 'root', 
-  password: 'McFlurrywoo22', 
+  password: '', 
   database: 'db' 
 },
     console.log(`connected to db`)
@@ -27,7 +27,7 @@ function showDepartments() {
   db.query(`SELECT * FROM department`, function(err, results) { 
     let table = new AsciiTable('All Departments');
     table.setHeading('Id', 'Department Name')
-    results.forEach((row) => { //* row is semantic and arbitrary
+    results.forEach((row) => { 
      table.addRow(row.id, row.name)
     })
     console.log(table.toString());
