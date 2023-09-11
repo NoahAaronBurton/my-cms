@@ -112,6 +112,59 @@ function addEmployee(id,firstName,lastName,isManager, addManager,roleId) {
   mainMenu();
 }
 
+let employeeChoices = [];
+function getEmployees () {
+  db.query(`SELECT id, first_name, last_name FROM employee`, function (err,results) {
+    if (err) {
+      console.error('Error retrieving employees:', err);
+      return;
+    } 
+
+    for (let i = 0; i < results.length; i++) {
+      const row= results[i];
+      const employeeChoice = {
+        name: `${row.first_name} ${row.last_name}`,
+        value: row.id,
+      };
+      employeeChoices.push(employeeChoice);
+    }
+  })
+}
+
+let roleChoices = [];
+function getRollChoices() {
+  db.query(`SELECT id, title FROM role`, function(err,results) {
+    if (err) {
+      console.error('Error retrieving employees:', err);
+      return;
+    };
+    for (let i = 0; i < results.length; i++) {
+      const row = results[i];
+      const roleChoice = {
+        name: `${row.title}`,
+        value: row.id,
+      
+    }
+      roleChoices.push(roleChoice);
+  }
+  })
+}
+
+function updateRole(employeeId, newRoleId) {
+  db.query(
+    'UPDATE employee SET role_id = ? WHERE id = ?',
+    [newRoleId, employeeId],
+    function (err, results) {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      console.log(`Employee role updated successfully.`);
+      mainMenu();
+    }
+  );
+}
+
 let managerChoices = []; 
 function getManagers() { 
 
@@ -288,6 +341,20 @@ const questions = [
     when: (answers) => answers.mainMenu === 'Add Role',
     message: 'Select the department this role belongs to:',
     choices: departmentChoices
+  },
+  { // update employee
+    name: 'employeeUpdateId',
+    type: 'list',
+    when: (answers) => answers.mainMenu === 'Update Employee Role',
+    message: 'Select the employee you want to update the role for:',
+    choices: employeeChoices
+  }, 
+  {
+    name: 'newRole',
+    type: 'input',
+    when: (answers) => answers.mainMenu === 'Update Employee Role', 
+    message: 'Enter the corresponding Role ID for the new Role:',
+    
   }, 
   
 
@@ -313,11 +380,16 @@ inquirer
       addEmployee(data.id,data.addFirstName,data.addLastName,data.isManager,data.addManager,data.addRole);
      } if (data.mainMenu === 'Add Role') {
       addRole(data.roleId,data.roleName,data.addSalary,data.selectDepartment)
+     } if (data.mainMenu === 'Update Employee Role') {
+      updateRole(data.employeeUpdateId, data.newRole)
      }
   })
 }
 
 // ---LEAVE AT BOTTOM---
+// todo: refresh all choices function that doesnt double them up.
+getRollChoices();
+getEmployees();
 getManagers();
 getDepartments();
 mainMenu();
